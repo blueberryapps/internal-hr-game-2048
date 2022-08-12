@@ -10,9 +10,19 @@ import {
   Typography,
 } from "@mui/material";
 import Registration from "../components/modal/Registration";
+import { gql, useMutation } from "@apollo/client";
+
+const LOGIN_USER = gql`
+  mutation authenticateUserWithPassword($email: String, $password: String) {
+    authenticateUserWithPassword(email: $email, password: $password) {
+      token
+    }
+  }
+`;
 
 export default function LoginPage() {
-  //TODO: To log in, call the mutation authenticateUserWithPassword
+  //TODO: Example: mutation authenticateUserWithPassword
+  const [loginUser] = useMutation(LOGIN_USER);
 
   //TODO: Add form validations
 
@@ -58,6 +68,15 @@ export default function LoginPage() {
                   fullWidth
                   onClick={() => {
                     console.log("Log in");
+                    //TODO: EXAMPLE call mutation loginUser
+                    loginUser({
+                      variables: {
+                        email: "filip@gmail.com",
+                        password: "filipgmail",
+                      },
+                    }).then(({ data }) => {
+                      console.log("data", data);
+                    });
                   }}
                 >
                   Sign in
