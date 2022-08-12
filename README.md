@@ -79,5 +79,5 @@ Your last task is:
 
 • Use Typescript, React Hooks, Apollo, Material UI
 • Next JS (Routing)
-• Global State Management Redux/Mobx/… (it's up to you)
+• Global State Management Redux/Mobx/Context (it's up to you)
 • For form validation we recommend to use React Hook Form with Joi (it's up to you)
