@@ -1,40 +1,101 @@
 import * as React from "react";
-
+import { Key } from 'ts-key-enum';
 import { Box, Button, Container, Grid, Typography } from "@mui/material";
+import {gql} from "../gql";
+import {useMutation, useQuery} from "@apollo/client";
+import {GridTile} from "./GridTile";
+import {GridRow} from "./GridRow";
+import {GridBoard} from "./GridBoard";
+import {useEventListener} from "../hooks/useEventListener";
+import {Direction, GameInput} from "../gql/graphql";
+
+const GAME_FRAGMENT = gql(`
+  fragment GameFragment on Game {
+    state
+    score
+    finished
+  }
+`)
+
+const NEW_GAME = gql(`
+  query NewGame {
+    newGame {
+      ...GameFragment
+    }
+  }
+`)
+
+const PROCESS_GAME = gql(`
+  mutation processGame($game: GameInput!) {
+    processGame(game: $game) {
+      ...GameFragment
+    }
+  }
+`)
+
+const HIGH_SCORE = gql(`
+  query HighScore($where: ScoreWhereInput, $first: Int, $sortBy: [SortScoresBy!]) {
+    allScores(where: $where, first: $first, sortBy: $sortBy) {
+      id
+      score
+    }
+  }
+`)
+
+const keyDirectionMap: Record<string, Direction> = {
+  [Key.ArrowUp]: Direction.Up,
+  [Key.ArrowRight]: Direction.Right,
+  [Key.ArrowDown]: Direction.Down,
+  [Key.ArrowLeft]: Direction.Left
+}
 
 export default function Game() {
-  //TODO: To start the game, call the query newGame
+  const { data: highScoreData } = useQuery(HIGH_SCORE);
+  const { data, refetch } = useQuery(NEW_GAME);
+  const [processGame] = useMutation(PROCESS_GAME, {
+    update(cache, data) {
+      const result = data?.data?.processGame;
 
-  //TODO: For each step in the game, call the mutation processGame
+      if (!result) {
+        return;
+      }
 
-  const getBgItemColor = (number: number) => {
-    switch (number) {
-      case 2:
-        return "#eee4da";
-      case 4:
-        return "#eee1c9";
-      case 8:
-        return "#f3b27a";
-      case 16:
-        return "#f69664";
-      case 32:
-        return "#f77c5f";
-      case 64:
-        return "#f75f3b";
-      case 128:
-        return "#edd073";
-      case 256:
-        return "#edcc62";
-      case 512:
-        return "#edc950";
-      case 1024:
-        return "#ffc400";
-      case 2048:
-        return "#ffab00";
-      default:
-        return "#d7ccc8";
+      cache.writeQuery({
+        query: NEW_GAME,
+        data: {
+          newGame: {
+            ...result
+          }
+        }
+      })
     }
-  };
+  });
+
+  const highScore = highScoreData?.allScores && highScoreData?.allScores[0]?.score || data?.newGame?.score || 0;
+
+  useEventListener(window, "keydown", async (event) => {
+    const direction = keyDirectionMap[event.key];
+
+    if (!direction) {
+      return;
+    }
+
+    try {
+      const gameInput: GameInput = {
+        state: [...(data?.newGame?.state || [])],
+        score: data?.newGame?.score || 0,
+        direction
+      }
+
+      await processGame({
+        variables: {
+          game: gameInput
+        }
+      })
+    } catch (err) {
+      console.error(err);
+    }
+  })
 
   return (
     <Container maxWidth="sm">
@@ -71,7 +132,7 @@ export default function Game() {
                     fontWeight="bold"
                     color="white"
                   >
-                    0
+                    {data?.newGame?.score}
                   </Typography>
                 </Grid>
               </Grid>
@@ -97,7 +158,7 @@ export default function Game() {
                     fontWeight="bold"
                     color="white"
                   >
-                    1408
+                    {highScore}
                   </Typography>
                 </Grid>
               </Grid>
@@ -122,7 +183,7 @@ export default function Game() {
           </Typography>
         </Grid>
         <Grid item flex={1} textAlign="end">
-          <Button variant="contained" onClick={() => console.log("new game")}>
+          <Button variant="contained" onClick={() => refetch()}>
             New game
           </Button>
         </Grid>
@@ -135,7 +196,15 @@ export default function Game() {
         bgcolor="#bbada0"
         borderRadius={2}
       >
-        {/* TODO: Show Grid for Game 2048 */}
+        <GridBoard>
+          {data?.newGame?.state?.map((row, rowIndex) => (
+              <GridRow key={rowIndex}>
+                {row?.map((value, colIndex) => (
+                    <GridTile key={`${colIndex}-${rowIndex}`} value={value} />
+                ))}
+              </GridRow>
+          ))}
+        </GridBoard>
       </Box>
     </Container>
   );
