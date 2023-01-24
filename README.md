@@ -2,6 +2,21 @@
 
 Game 2048 repository for hiring purposes
 
+
+# Links to files with my solutions:
+Probably what you're looking for:
+- [Auth](/lib/auth.tsx)
+- [Auth Layout](/components/Layout.tsx)
+- [GraphQL types generator](/login/codegen.ts)
+- [Form validation](/validators/registrationSchema.ts)
+- [Form submit](/components/modal/Registration.tsx)
+- [Apollo cache update](/components/Game.tsx#L55)
+- [This file I forgot to delete](/components/ProtectedPage.tsx)
+- [Me using my own library just to check if value is a function and getting wild with Typescript](/hooks/useEventListener.ts)
+- [This comment on my StackOverflow answer](https://stackoverflow.com/questions/70632026/generic-to-recursively-modify-a-given-type-interface-in-typescript/70632615#comment124862574_70632615)
+- [My #1 top favorite song ever](https://www.youtube.com/watch?v=RPS-Cq4uMFs)
+- [And probably the best web app ever](https://app.daily.dev/)
+
 ## The task
 
 The overall goal is to create a login page, registration modal, “hall of fame” page and design clone of the puzzle game 2048 and then link it to prepared backend. We have created a backend (Graphql API) and its documentation + schema can be found here: https://hiring-backend-2048.herokuapp.com/admin/graphiql
